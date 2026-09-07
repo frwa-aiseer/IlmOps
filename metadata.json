@@ -1,0 +1,7 @@
+{
+  "name": "IlmOps",
+  "description": "Internal research-to-publishing content operations platform managing discovery, production, technical QC, publishing, and analytics.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
