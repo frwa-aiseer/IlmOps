@@ -243,7 +243,7 @@ async function runP06LiveDataPreviewAudit() {
   // Test getLiveSources without token
   await assert.rejects(
     async () => {
-      await livePreviewService.getLiveSources({ token: undefined });
+      await livePreviewService.getLiveSources({ accessToken: undefined });
     },
     (err: any) => {
       assert.equal(err.code, 'AUTHORIZATION_REQUIRED');
@@ -257,7 +257,7 @@ async function runP06LiveDataPreviewAudit() {
   // Test getLiveJobs without token
   await assert.rejects(
     async () => {
-      await livePreviewService.getLiveJobs({ token: undefined });
+      await livePreviewService.getLiveJobs({ accessToken: undefined });
     },
     (err: any) => {
       assert.equal(err.code, 'AUTHORIZATION_REQUIRED');
@@ -376,11 +376,11 @@ async function runP06LiveDataPreviewAudit() {
 
   // Setup Mock Live Workspace Client
   const mockClient = new MockLiveReadOnlyWorkspaceClient();
-  sourceRepository.client = mockClient;
-  contentJobRepository.client = mockClient;
-  configRepository.client = mockClient;
-  manualSourceRepository.client = mockClient;
-  activityLogRepository.client = mockClient;
+  (sourceRepository as any).client = mockClient;
+  (contentJobRepository as any).client = mockClient;
+  (configRepository as any).client = mockClient;
+  (manualSourceRepository as any).client = mockClient;
+  (activityLogRepository as any).client = mockClient;
   livePreviewService.workspaceAdapter = mockClient;
 
   const validToken = 'mock_valid_google_workspace_oauth_token';
@@ -422,7 +422,7 @@ async function runP06LiveDataPreviewAudit() {
   // TEST 5: Compact Research Source Projection & Secret Redaction
   // --------------------------------------------------------------------------
   console.log('\n[5] Verifying Compact Source Projection & Secret Redaction...');
-  const sourcesRes = await livePreviewService.getLiveSources({ token: validToken });
+  const sourcesRes = await livePreviewService.getLiveSources({ accessToken: validToken });
   assert.equal(sourcesRes.originProof.dataOrigin, 'live-google-sheets');
   assert.equal(sourcesRes.items.length, 2);
 
@@ -444,11 +444,11 @@ async function runP06LiveDataPreviewAudit() {
   // TEST 6: Zero Live Content Jobs Handling & Truthful Empty State
   // --------------------------------------------------------------------------
   console.log('\n[6] Verifying Truthful Zero Jobs State (APP_Content_Jobs empty)...');
-  const jobsRes = await livePreviewService.getLiveJobs({ token: validToken });
+  const jobsRes = await livePreviewService.getLiveJobs({ accessToken: validToken });
   assert.equal(jobsRes.items.length, 0, 'Must have 0 jobs from empty live sheet');
   assert.equal(jobsRes.actualRecordCount, 0, 'Actual record count must be 0');
   assert.equal(jobsRes.originProof.dataOrigin, 'live-google-sheets');
-  assert.equal(jobsRes.originProof.jobCount, 0);
+  assert.equal(jobsRes.originProof.sourceCount, 0);
 
   // Relational fan-out check for empty jobs
   assert.equal(health.relationalFanOut.hasMultiVariantSource, false);
@@ -487,11 +487,11 @@ async function runP06LiveDataPreviewAudit() {
   // TEST 8: Niche Filtering Across Live Queues
   // --------------------------------------------------------------------------
   console.log('\n[8] Verifying Live Niche Filtering...');
-  const aiOnly = await livePreviewService.getLiveSources({ niche: 'ai_data', token: validToken });
+  const aiOnly = await livePreviewService.getLiveSources({ niche: 'ai_data', accessToken: validToken });
   assert.equal(aiOnly.items.length, 1);
   assert.equal(aiOnly.items[0].nicheId, 'ai_data');
 
-  const eeOnly = await livePreviewService.getLiveSources({ niche: 'electrical_energy', token: validToken });
+  const eeOnly = await livePreviewService.getLiveSources({ niche: 'electrical_energy', accessToken: validToken });
   assert.equal(eeOnly.items.length, 1);
   assert.equal(eeOnly.items[0].nicheId, 'electrical_energy');
   passedAssertions += 4;
@@ -501,7 +501,7 @@ async function runP06LiveDataPreviewAudit() {
   // TEST 9: Bounded Server-Side Pagination
   // --------------------------------------------------------------------------
   console.log('\n[9] Verifying Bounded Server-Side Pagination...');
-  const page1 = await livePreviewService.getLiveSources({ page: 1, pageSize: 1, token: validToken });
+  const page1 = await livePreviewService.getLiveSources({ page: 1, pageSize: 1, accessToken: validToken });
   assert.equal(page1.pagination.page, 1);
   assert.equal(page1.pagination.pageSize, 1);
   assert.equal(page1.pagination.totalItems, 2);
@@ -514,11 +514,11 @@ async function runP06LiveDataPreviewAudit() {
   // TEST 10: Safe Search across Live Sources
   // --------------------------------------------------------------------------
   console.log('\n[10] Verifying Search across Title, Domain, URL Key...');
-  const searchByTitle = await livePreviewService.getLiveSources({ search: 'DeepSeek', token: validToken });
+  const searchByTitle = await livePreviewService.getLiveSources({ search: 'DeepSeek', accessToken: validToken });
   assert.equal(searchByTitle.items.length, 1);
   assert.equal(searchByTitle.items[0].urlKey, 'deepseek-v3-inference-acceleration');
 
-  const searchByDomain = await livePreviewService.getLiveSources({ search: 'standards.ieee.org', token: validToken });
+  const searchByDomain = await livePreviewService.getLiveSources({ search: 'standards.ieee.org', accessToken: validToken });
   assert.equal(searchByDomain.items.length, 1);
   assert.equal(searchByDomain.items[0].sourceDomain, 'standards.ieee.org');
   passedAssertions += 4;

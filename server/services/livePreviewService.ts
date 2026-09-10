@@ -10,7 +10,10 @@ import {
   manualSourceRepository,
   activityLogRepository,
 } from '../repositories/index.ts';
-import { readOnlyWorkspaceClient } from '../integrations/googleWorkspace/workspaceClient.ts';
+import {
+  readOnlyWorkspaceClient,
+  ReadOnlyWorkspaceClient,
+} from '../integrations/googleWorkspace/workspaceClient.ts';
 import { WORKBOOK_CONFIG } from '../config/contentOpsWorkbook.ts';
 import { SHEET_NAMES, ResearchSource, ContentJob } from '../../shared/contracts/contentOps.ts';
 import type {
@@ -166,6 +169,8 @@ export function projectToCompactJob(job: ContentJob): LiveContentJobCompact {
 }
 
 export class LivePreviewService {
+  public workspaceAdapter: ReadOnlyWorkspaceClient = readOnlyWorkspaceClient;
+
   /**
    * Computes actual populated record counts and repository health.
    * Explicitly separates actual mapped record counts from Google Sheets grid capacities.
